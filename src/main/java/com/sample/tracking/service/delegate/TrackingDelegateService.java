@@ -6,5 +6,4 @@ import reactor.core.publisher.Mono;
 public interface TrackingDelegateService {
     Mono<Tracking> saveTracking(Tracking tracking);
     Mono<Tracking> fetchByTrackingNumber(String trackingNumber);
-
 }

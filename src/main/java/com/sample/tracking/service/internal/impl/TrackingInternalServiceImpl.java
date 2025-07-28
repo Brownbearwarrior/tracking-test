@@ -2,12 +2,11 @@ package com.sample.tracking.service.internal.impl;
 
 import com.sample.tracking.model.dto.request.TrackingParam;
 import com.sample.tracking.model.dto.response.TrackingResponse;
-import com.sample.tracking.service.delegate.TrackingDelegateService;
 import com.sample.tracking.service.internal.TrackingInternalService;
+import com.sample.tracking.service.delegate.TrackingDelegateService;
 import com.sample.tracking.util.TrackingUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -16,7 +15,6 @@ public class TrackingInternalServiceImpl implements TrackingInternalService {
 
     private final TrackingDelegateService trackingDelegateService;
 
-    @Transactional
     @Override
     public Mono<TrackingResponse> fetchNextTrackingNumber(TrackingParam trackingParam) {
         return generateTrackingNumberValid(trackingParam)

@@ -6,31 +6,33 @@ import com.sample.tracking.model.dto.common.Response;
 import com.sample.tracking.model.dto.request.TrackingParam;
 import com.sample.tracking.model.dto.response.TrackingResponse;
 import com.sample.tracking.service.internal.TrackingInternalService;
+import com.sample.tracking.util.TrackingUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(controllers = TrackingController.class)
+@WebFluxTest(TrackingController.class)
 public class TrackingControllerTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
-    @MockitoBean
+    @MockBean
     private TrackingInternalService trackingInternalService;
 
     private TrackingParam trackingParam;
@@ -39,19 +41,23 @@ public class TrackingControllerTest {
     @BeforeEach
     void setUp(){
         var custId = UUID.randomUUID().toString();
+        var createdAt = "2025-07-27T22:48:47.45+08:00";
 
         trackingParam = TrackingParam.builder()
                 .originCountryId("ID")
                 .destinationCountryId("US")
                 .weight(BigDecimal.valueOf(10.5))
-                .createdAt(LocalDateTime.now())
+                .createdAt(OffsetDateTime.parse(createdAt).toLocalDateTime())
                 .customerId(custId)
                 .customerName("John Doe")
                 .customerSlug("john-doe")
                 .build();
 
+        var trxNumb = TrackingUtil.generateTrackingNumber(trackingParam.getOriginCountryId(), trackingParam.getCreatedAt());
+
+
         trackingResponse = TrackingResponse.builder()
-                .trackingNumber("TRK123456789")
+                .trackingNumber(trxNumb)
                 .createdAt(LocalDateTime.now())
                 .customerId(custId)
                 .customerName("John Doe")
@@ -64,12 +70,11 @@ public class TrackingControllerTest {
     @Test
     @DisplayName("Should successfully fetch next tracking number")
     void fetchNextTrackingNumber_success() {
-
         when(trackingInternalService.fetchNextTrackingNumber(any(TrackingParam.class)))
                 .thenReturn(Mono.just(trackingResponse));
 
         Response<TrackingResponse> expectedResponse = Response.<TrackingResponse>builder()
-                .message(Message.MESSAGE_SUCCESS)
+                .message(Message.SUCCESS)
                 .data(trackingResponse)
                 .build();
 
